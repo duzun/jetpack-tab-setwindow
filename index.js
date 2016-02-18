@@ -6,16 +6,16 @@
  *      https://stackoverflow.com/a/33847868/1242333
  *      https://discourse.mozilla-community.org/t/tear-off-tab-with-sdk/7085/9
  *
- * Tested with Firefox 44 and Nightly 47. 
+ * Tested with Firefox 44 and Nightly 47.
  * It might break in future releases because it uses low-level API.
  *
  * @license MIT
- * @version 1.0.1
+ * @version 1.0.2
  * @author Dumitru Uzun (DUzun.Me)
  */
 
 // -------------------------------------------------------------
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 // -------------------------------------------------------------
 const Tab = require("sdk/tabs/tab").Tab;
 const viewFor = require("sdk/view/core").viewFor;
@@ -77,11 +77,14 @@ function setWindow(window, index, cb) {
                 var isSelected = oldWindow.activeTab == tab;
 
                 // If index specified, move placeholder-tab to desired index
+                var length = gBrowser.tabContainer.childElementCount;
                 if ( index != undefined ) {
-                    var length = gBrowser.tabContainer.childElementCount;
                     if ( length ) {
                         if ( index < 0 ) index = length - (index % length);
                     }
+                }
+                else {
+                    index = length;
                 }
 
                 if ( gBrowser.adoptTab ) {
@@ -109,30 +112,25 @@ function setWindow(window, index, cb) {
 };
 
 // -------------------------------------------------------------
-/// In the case gBrowser.adoptTab not defined ...
+/// In the case gBrowser.adoptTab not defined yet (FF44) ...
 function adoptTab(gBrowser, aTab, index, selected) {
     // Create a placeholder-tab on destination windows
     var newTab = gBrowser.addTab('about:newtab');
+    var newBrowser = newTab.linkedBrowser || gBrowser.getBrowserForTab(newTab);
 
-    var Ci = require('chrome').Ci;
-    newTab.linkedBrowser.webNavigation.stop(Ci.nsIWebNavigation.STOP_ALL); // we don't need this tab anyways
+    // Stop the about:blank load.
+    newBrowser.stop();
 
-    // If index specified, move placeholder-tab to desired index
-    if ( index != undefined ) {
-        var length = gBrowser.tabContainer.childElementCount;
-        if ( length ) {
-            if ( index < 0 ) index = length - (index % length);
-            if( 0 <= index && index < length ) {
-                gBrowser.moveTabTo(newTab, index);
-            }
-        }
-    }
+    // Make sure it has a docshell.
+    newBrowser.docShell;
 
     // Copy tab properties to placeholder-tab
     var numPinned = gBrowser._numPinnedTabs;
     if (index < numPinned || (aTab.pinned && index == numPinned)) {
         gBrowser.pinTab(newTab);
     }
+
+    gBrowser.moveTabTo(newTab, index);
 
     // For some reason this doesn't seem to work :-(
     if ( selected ) {
