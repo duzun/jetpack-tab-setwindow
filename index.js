@@ -6,6 +6,8 @@
  *      https://stackoverflow.com/a/33847868/1242333
  *      https://discourse.mozilla-community.org/t/tear-off-tab-with-sdk/7085/9
  *
+ * Tested with Firefox 44 and Nightly 47. 
+ * It might break in future releases because it uses low-level API.
  *
  * @license MIT
  * @version 1.0.1
@@ -60,7 +62,7 @@ function setWindow(window, index, cb) {
 
             if ( !window ) {
                 var aOldWin = viewFor(oldWindow);
-                aNewTab = aOldWin.gBrowser.replaceTabWithWindow(aTab, {});
+                aNewTab = aOldWin.gBrowser.replaceTabWithWindow(aTab, {/*screenX: left, screenY: top, ...*/});
             }
             else {
                 var aWin = viewFor(window);
