@@ -1,5 +1,5 @@
 /**
- * Monkey patch Firefox Addon SDK's Tab class with a method for moveing tabs to other windows.
+ * Monkey patch Firefox Addon SDK's Tab class with a method for moving tabs to other windows.
  *
  *
  *  See discussions:
