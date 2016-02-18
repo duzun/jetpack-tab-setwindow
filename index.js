@@ -8,10 +8,12 @@
  *
  *
  * @license MIT
- * @version 1.0.0
+ * @version 1.0.1
  * @author Dumitru Uzun (DUzun.Me)
  */
 
+// -------------------------------------------------------------
+const VERSION = '1.0.1';
 // -------------------------------------------------------------
 const Tab = require("sdk/tabs/tab").Tab;
 const viewFor = require("sdk/view/core").viewFor;
@@ -28,7 +30,7 @@ const { Promise, defer } = require('sdk/core/promise');
  *
  * @param Promise newTab
  */
-Tab.prototype.setWindow = function (window, index, cb) {
+function setWindow(window, index, cb) {
     var tab = this;
     var tabId = tab.id;
     var oldWindow = tab.window;
@@ -148,8 +150,9 @@ function adoptTab(gBrowser, aTab, index, selected) {
     return newTab;
 }
 // -------------------------------------------------------------
+exports.setWindow = Tab.prototype.setWindow = setWindow;
+exports.VERSION = setWindow.VERSION = VERSION;
 
-exports.setWindow = setWindow;
 exports.Tab = Tab;
 
 // -------------------------------------------------------------

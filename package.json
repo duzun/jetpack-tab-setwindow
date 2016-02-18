@@ -1,9 +1,10 @@
 {
   "name": "jetpack-tab-setwindow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Monkey patch Firefox Addon SDK's Tab class with a method for moving tabs to other windows",
   "main": "index.js",
   "scripts": {
+    "verup": "verup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +25,13 @@
   "bugs": {
     "url": "https://github.com/duzun/jetpack-tab-setwindow/issues"
   },
-  "homepage": "https://github.com/duzun/jetpack-tab-setwindow#readme"
+  "homepage": "https://github.com/duzun/jetpack-tab-setwindow#readme",
+  "verup": {
+    "files": [
+      "index.js"
+    ]
+  },
+  "devDependencies": {
+    "verup": "^1.3.6"
+  }
 }
