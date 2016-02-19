@@ -10,12 +10,12 @@
  * It might break in future releases because it uses low-level API.
  *
  * @license MIT
- * @version 1.0.2
+ * @version 1.0.3
  * @author Dumitru Uzun (DUzun.Me)
  */
 
 // -------------------------------------------------------------
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 // -------------------------------------------------------------
 const Tab = require("sdk/tabs/tab").Tab;
 const viewFor = require("sdk/view/core").viewFor;
@@ -87,12 +87,7 @@ function setWindow(window, index, cb) {
                     index = length;
                 }
 
-                if ( gBrowser.adoptTab ) {
-                    aNewTab = gBrowser.adoptTab(aTab, index, isSelected);
-                }
-                else {
-                    aNewTab = adoptTab(gBrowser, aTab, index, isSelected);
-                }
+                aNewTab = adoptTab(gBrowser, aTab, index, isSelected);
             }
 
             // Log for debugging:
@@ -112,8 +107,20 @@ function setWindow(window, index, cb) {
 };
 
 // -------------------------------------------------------------
+/// On first call, choose custom vs built-in implementation of `adoptTab()`
+var adoptTab = (gBrowser, ...args) => {
+    if ( gBrowser.adoptTab ) {
+        adoptTab = (gBrowser, ...args) => gBrowser.adoptTab(...args);
+    }
+    else {
+        adoptTab = _adoptTab;
+    }
+    return adoptTab(gBrowser, ...args);
+};
+
+// -------------------------------------------------------------
 /// In the case gBrowser.adoptTab not defined yet (FF44) ...
-function adoptTab(gBrowser, aTab, index, selected) {
+function _adoptTab(gBrowser, aTab, index, selected) {
     // Create a placeholder-tab on destination windows
     var newTab = gBrowser.addTab('about:newtab');
     var newBrowser = newTab.linkedBrowser || gBrowser.getBrowserForTab(newTab);
@@ -132,7 +139,7 @@ function adoptTab(gBrowser, aTab, index, selected) {
 
     gBrowser.moveTabTo(newTab, index);
 
-    // For some reason this doesn't seem to work :-(
+    // @TODO: Test this, not sure it works
     if ( selected ) {
         gBrowser.selectedTab = newTab;
     }
