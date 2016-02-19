@@ -10,12 +10,12 @@
  * It might break in future releases because it uses low-level API.
  *
  * @license MIT
- * @version 1.0.3
+ * @version 1.0.4
  * @author Dumitru Uzun (DUzun.Me)
  */
 
 // -------------------------------------------------------------
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 // -------------------------------------------------------------
 const Tab = require("sdk/tabs/tab").Tab;
 const viewFor = require("sdk/view/core").viewFor;
@@ -36,6 +36,8 @@ function setWindow(window, index, cb) {
     var tab = this;
     var tabId = tab.id;
     var oldWindow = tab.window;
+
+    // var tmr = Date.now();
 
     return new Promise(function (resolve, reject) {
         // Same window
@@ -62,7 +64,42 @@ function setWindow(window, index, cb) {
 
             if ( !window ) {
                 var aOldWin = viewFor(oldWindow);
-                aNewTab = aOldWin.gBrowser.replaceTabWithWindow(aTab, {/*screenX: left, screenY: top, ...*/});
+                var aNewWin = aOldWin.gBrowser.replaceTabWithWindow(aTab, {/*screenX: left, screenY: top, ...*/});
+                var newWin;
+
+                // console.log('setWindow.replaceTabWithWindow', Date.now()-tmr, {aNewWin, aOldWin, gBrowser: aNewWin.gBrowser})
+
+                // New window is not ready yet, but in case things change, test window readiness
+                if ( aNewWin.gBrowser && (newWin = modelFor(aNewWin)) ) {
+                    onNewTab(newWin.tabs[0]);
+                }
+                // Wait for newWin.onOpen event - can't use model yet, so listen for DOM events and catch newWin.onOpen:
+                else {
+                    var _onWindowOpen = function (evt) {
+                        // evt.currentTarget === aNewWin, but this could be an event from a different target
+
+                        // we should avoid calling modelFor(aNewWin) before it is ready
+                        if ( !aNewWin.gBrowser ) return;
+
+                        newWin = modelFor(aNewWin);
+
+                        // make sure one more time we a ok to continue
+                        if ( !newWin ) return;
+
+                        // Cleanup!
+                        aNewWin.removeEventListener('DOMContentLoaded', _onWindowOpen);
+                        aNewWin.removeEventListener('load', _onWindowOpen);
+
+                        // Now we have the new tab in SDK
+                        onNewTab(newWin.tabs[0]);
+
+                        // Alternative:
+                        // onNewTab(modelFor(aNewWin.gBrowser.tabContainer.childNodes[0]));
+                    }
+
+                    aNewWin.addEventListener('DOMContentLoaded', _onWindowOpen);
+                    aNewWin.addEventListener('load', _onWindowOpen);
+                }
             }
             else {
                 var aWin = viewFor(window);
@@ -88,21 +125,25 @@ function setWindow(window, index, cb) {
                 }
 
                 aNewTab = adoptTab(gBrowser, aTab, index, isSelected);
+
+                onNewTab(modelFor(aNewTab));
             }
+        }());
+
+        function onNewTab(newTab) {
+            // Avoid calling this more then once
+            if ( !resolve ) return;
 
             // Log for debugging:
-            // console.log('setWindow', {index, isSelected, tab, tabId});
-
-            var newTab = modelFor(aNewTab);
-
-            // console.log('setWindow.done', {tabId, newTabId: newTab.id});
+            // console.log('setWindow.onNewTab', Date.now()-tmr, {newTab: newTab, id: newTab&&newTab.id, oldId: tabId});
 
             // Old tab (model) no longer usable
             tab.destroy();
 
             cb && cb(newTab, tabId);
-            return resolve(newTab);
-        }());
+            resolve(newTab);
+            resolve = undefined;
+        }
     });
 };
 
