@@ -10,12 +10,12 @@
  * It might break in future releases because it uses low-level API.
  *
  * @license MIT
- * @version 1.0.4
+ * @version 1.0.5
  * @author Dumitru Uzun (DUzun.Me)
  */
 
 // -------------------------------------------------------------
-const VERSION = '1.0.4';
+const VERSION = '1.0.5';
 // -------------------------------------------------------------
 const Tab = require("sdk/tabs/tab").Tab;
 const viewFor = require("sdk/view/core").viewFor;
@@ -66,6 +66,18 @@ function setWindow(window, index, cb) {
                 var aOldWin = viewFor(oldWindow);
                 var aNewWin = aOldWin.gBrowser.replaceTabWithWindow(aTab, {/*screenX: left, screenY: top, ...*/});
                 var newWin;
+
+                // For some reason new window didn't open
+                if ( !aNewWin ) {
+                    // If there is only one tab in the window, FF wouldn't open
+                    // a new window for this tab (Chrome does open a new window)
+                    if ( oldWindow.tabs.length == 1 ) {
+                        // Just return the old tab
+                        cb && cb(tab, tabId);
+                        resolve(tab);
+                        return;
+                    }
+                }
 
                 // console.log('setWindow.replaceTabWithWindow', Date.now()-tmr, {aNewWin, aOldWin, gBrowser: aNewWin.gBrowser})
 
