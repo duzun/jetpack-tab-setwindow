@@ -34,7 +34,10 @@ TABS[0].setWindow(TABS[1].window, -1)
     // But newTab.id !== TABS[0].id
 
     // Move second tab to a new window (tear off)
-    return TABS[1].setWindow(null);
+    return TABS[1].setWindow(null)
+    .then(function (newTab1) {
+        // Note: if TABS[1] is the only tab in its window, tab is not detached and newTab1 === TABS[1]
+    });
 });
 
 ```
