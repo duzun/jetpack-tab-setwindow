@@ -4,7 +4,7 @@ Monkey patch Firefox Addon SDK's Tab class with a method for moving tabs to othe
 
 ## Install
 
-In you addon folder run
+In your addon folder run
 
 ```sh
 npm i jetpack-tab-setwindow --save
@@ -12,7 +12,7 @@ npm i jetpack-tab-setwindow --save
 
 ## Usage
 
-In you addon code include
+In your addon code include
 
 ```js
 require('jetpack-tab-setwindow');
@@ -21,7 +21,6 @@ require('jetpack-tab-setwindow');
 That's it!
 
 Now you can call `setWindow(window, index)` on any SDK tab.
-
 
 ```js
 const TABS = require("sdk/tabs");
@@ -42,7 +41,6 @@ TABS[0].setWindow(TABS[1].window, -1)
 
 ```
 
-
 ## Note
 
 This library uses Addon SDK low-level API, which is not encouraged.
@@ -56,4 +54,3 @@ Here is a note from Mozilla's SDK Add-ons website:
 So use with care.
 
 Tested with Firefox 44 and Nightly 47.
-
